@@ -11,3 +11,8 @@ add the apps to the excluded-apps file (1 app, 1 line)
 ```bash
 mullvad split-tunnel clear
 ```
+
+OPTIONS:
+
+**-a**
+ouvre le fichier des applications exclues
