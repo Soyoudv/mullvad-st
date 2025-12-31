@@ -7,12 +7,7 @@ did this because i dont wanna use the other methods that are very shitty
 is the excluded-apps file is empty, it will open for you in code
 add the apps to the excluded-apps file (1 app, 1 line)
 
-**if you want to clean the split-tunneling, do:**
-```bash
-mullvad split-tunnel clear
-```
-
-OPTIONS:
+### OPTIONS:
 
 **-e**
 *ouvre le fichier des applications exclues*

@@ -1,6 +1,6 @@
 INSTALL_DIR ?= $(HOME)/.local/bin
-SCRIPT := mullvad-split-tunnel.sh
-TARGET := $(INSTALL_DIR)/mullvad-split-tunnel
+SCRIPT := mst.sh
+TARGET := $(INSTALL_DIR)/mst
 
 .PHONY: all install uninstall
 
@@ -9,7 +9,7 @@ all: install
 install:
 	@mkdir -p $(INSTALL_DIR)
 	install -m 755 $(SCRIPT) $(TARGET)
-	@CONFIG_DIR=$${XDG_CONFIG_HOME:-$$HOME/.config}/mullvad-split-tunnel; \
+	@CONFIG_DIR=$${XDG_CONFIG_HOME:-$$HOME/.config}/mst; \
 	  CONFIG_FILE=$$CONFIG_DIR/excluded-apps.txt; \
 	  mkdir -p $$CONFIG_DIR; \
 	  if [ ! -f $$CONFIG_FILE ]; then \
@@ -22,7 +22,7 @@ install:
 
 uninstall:
 	@rm -f $(TARGET)
-	@CONFIG_DIR=$${XDG_CONFIG_HOME:-$$HOME/.config}/mullvad-split-tunnel; \
+	@CONFIG_DIR=$${XDG_CONFIG_HOME:-$$HOME/.config}/mst; \
 	  CONFIG_FILE=$$CONFIG_DIR/excluded-apps.txt; \
 	  if [ -f $$CONFIG_FILE ]; then \
 		rm -rf $$CONFIG_DIR/; \
