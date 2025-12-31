@@ -12,6 +12,20 @@ if [ ! -f "$EXCLUDED_APPS_FILE" ]; then
 fi
 echo "Using excluded apps list from: $EXCLUDED_APPS_FILE"
 
+while getopts ":ab" opt; do
+  case ${opt} in
+    a)
+      echo "Ouverture du fichier de configuration pour modification..."
+      code "$EXCLUDED_APPS_FILE"
+      exit 1
+    ;;
+    ?)
+      echo "Invalid option: -${OPTARG}."
+      exit 1
+    ;;
+  esac
+done
+
 #read excluded apps into array
 mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
 
