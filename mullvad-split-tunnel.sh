@@ -9,9 +9,9 @@ if [ ! -f "$EXCLUDED_APPS_FILE" ]; then
 fi
 echo "Using excluded apps list from: $EXCLUDED_APPS_FILE"
 
-while getopts ":ab" opt; do
+while getopts ":e" opt; do
   case ${opt} in
-    a)
+    e)
       echo "Ouverture du fichier de configuration pour modification..."
       code "$EXCLUDED_APPS_FILE"
       exit 1
