@@ -13,10 +13,10 @@ add the apps to the excluded-apps file (1 app, 1 line)
 ### OPTIONS:
 
 **-e**
-*ouvre le fichier des applications exclues*
+*open the excluded apps file*
 
 **-s**
-*mode silencieux, pas de logs*
+*silenced mode*
 
 **-c**
-*clean le split tunneling de mullvad*
+*clean mullvad's split tunneling*
