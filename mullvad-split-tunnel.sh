@@ -15,6 +15,7 @@ echo "Using excluded apps list from: $EXCLUDED_APPS_FILE"
 #read excluded apps into array
 mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
 
+#check if any excluded apps were found, else open config for editing
 if [ ${#EXCLUDED_APPS[@]} -eq 0 ]; then
   echo "No excluded apps found in $EXCLUDED_APPS_FILE" >&2
   code "$EXCLUDED_APPS_FILE"
