@@ -22,6 +22,13 @@ if [ ${#EXCLUDED_APPS[@]} -eq 0 ]; then
   exit 1
 fi
 
+cleanup(){
+  echo ""
+  echo "Cleaning up split tunnel..."
+  mullvad split-tunnel clear >> ./out.log
+}
+trap cleanup EXIT
+
 STATE_FILE="$HOME/.cache/mullvad-split-pids"
 
 #ensure state file directory exists
@@ -32,7 +39,7 @@ mkdir -p "$(dirname "$STATE_FILE")"
 
 echo "Cleaning up existing split tunnel pids..."
 
-mullvad split-tunnel clear >> ./out.log
+cleanup
 
 echo "Split tunnel running, ${#EXCLUDED_APPS[*]} apps excluded."
 
