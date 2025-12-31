@@ -16,3 +16,6 @@ OPTIONS:
 
 **-e**
 *ouvre le fichier des applications exclues*
+
+**-s**
+*mode silencieux, pas de logs*

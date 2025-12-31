@@ -9,12 +9,16 @@ if [ ! -f "$EXCLUDED_APPS_FILE" ]; then
 fi
 echo "Using excluded apps list from: $EXCLUDED_APPS_FILE"
 
-while getopts ":e" opt; do
+while getopts ":es" opt; do
   case ${opt} in
     e)
       echo "Ouverture du fichier de configuration pour modification..."
       code "$EXCLUDED_APPS_FILE"
       exit 1
+    ;;
+    s)
+      echo "Exécution en mode silencieux..."
+      exec >/dev/null 2>&1
     ;;
     ?)
       echo "Invalid option: -${OPTARG}."
