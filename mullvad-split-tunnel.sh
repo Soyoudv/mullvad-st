@@ -3,18 +3,23 @@
 #reset log
 : > ./out.log
 
+#load excluded apps from config
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/mullvad-split-tunnel"
 EXCLUDED_APPS_FILE="$CONFIG_DIR/excluded-apps"
-
 if [ ! -f "$EXCLUDED_APPS_FILE" ]; then
   echo "Missing excluded apps file: $EXCLUDED_APPS_FILE" >&2
   exit 1
 fi
-
 echo "Using excluded apps list from: $EXCLUDED_APPS_FILE"
 
 #read excluded apps into array
 mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
+
+if [ ${#EXCLUDED_APPS[@]} -eq 0 ]; then
+  echo "No excluded apps found in $EXCLUDED_APPS_FILE" >&2
+  code "$EXCLUDED_APPS_FILE"
+  exit 1
+fi
 
 STATE_FILE="$HOME/.cache/mullvad-split-pids"
 
