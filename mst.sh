@@ -18,16 +18,27 @@ blacklist(){
   for app in "${EXCLUDED_APPS[@]}"; do
     # echo "Checking for app: $app"
 
-    pgrep -f "$app" | while read -r pid; do
+    pidtodelete=() #reset applist array
+
+    while read -r pid; do
       if ! grep -q "^$pid$" "$STATE_FILE"; then
-        echo -e "\e[95m$app\e[0m [\e[96m$pid\e[0m] \e[90mexcluded\e[0m"
-        if mullvad split-tunnel add "$pid" > /dev/null 2>&1; then
-          echo "$pid" >> "$STATE_FILE"
-        else 
-          echo "Failed to add $app [$pid] to split tunnel"
-        fi
+        pidtodelete+=("$pid") #add new pid to array
       fi
-    done
+    done < <(pgrep -f "$app")
+
+    #remove pids that are no longer running
+    if [ ${#pidtodelete[@]} -eq 0 ]; then
+      continue
+    else
+      for delpid in "${pidtodelete[@]}"; do
+        if mullvad split-tunnel add "$delpid" > /dev/null 2>&1; then
+          echo "$delpid" >> "$STATE_FILE"
+        else 
+          echo "Failed to add $app [$delpid] to split tunnel"
+        fi
+      done
+      echo -e "\e[95m$app\e[0m [\e[96m${pidtodelete[*]}\e[0m] \e[90mexcluded\e[0m"
+    fi
   done
   
   sleep 5
