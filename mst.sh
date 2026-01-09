@@ -13,6 +13,27 @@ load_config(){
   fi
 }
 
+refresh_excluded_apps(){
+  mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
+
+  echo -e "\e[96mUsing excluded apps list from:\e[0m \e[95m$EXCLUDED_APPS_FILE\e[0m"
+
+  #read excluded apps into array
+  mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
+
+  #check if any excluded apps were found, else open config for editing
+  if [ ${#EXCLUDED_APPS[@]} -eq 0 ]; then
+    echo -e "\e[91mNo excluded apps found in $EXCLUDED_APPS_FILE\e[0m" >&2
+    xdg-open "$EXCLUDED_APPS_FILE"
+    exit 1
+  fi
+}
+
+load_excluded_apps(){
+  load_config
+  refresh_excluded_apps
+}
+
 cleanup(){
   echo -e "\e[96mCleaning up split tunnel pids...\e[0m"
   mullvad split-tunnel clear > /dev/null 2>&1
@@ -126,22 +147,6 @@ while getopts ": s a: r: l e c" opt; do
 done
 
 
-# ---------------------------------- MAIN SCRIPT ---------------------------------- #
-
-trap cleanup_exit EXIT
-
-echo -e "\e[96mUsing excluded apps list from:\e[0m \e[95m$EXCLUDED_APPS_FILE\e[0m"
-
-#read excluded apps into array
-mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
-
-#check if any excluded apps were found, else open config for editing
-if [ ${#EXCLUDED_APPS[@]} -eq 0 ]; then
-  echo -e "\e[91mNo excluded apps found in $EXCLUDED_APPS_FILE\e[0m" >&2
-  xdg-open "$EXCLUDED_APPS_FILE"
-  exit 1
-fi
-
 cleanup
 
 # state file to keep track of added pids
@@ -150,6 +155,20 @@ mkdir -p "$(dirname "$STATE_FILE")" #ensure state file directory exists
 : > "$STATE_FILE" # reset state file // : because > alone can fail if noclobber is set
 
 
+# ---------------------------------- MAIN SCRIPT ---------------------------------- #
+
+trap cleanup_exit EXIT # clean up on exit
+
+refresh_excluded_apps # config already loaded once, just refresh excluded apps
+
+cleanup # clean up any existing split tunnel pids before starting
+
+# state file to keep track of added pids
+STATE_FILE="$HOME/.cache/mullvad-split-pids"
+mkdir -p "$(dirname "$STATE_FILE")" #ensure state file directory exists
+: > "$STATE_FILE" # reset state file // : because > alone can fail if noclobber is set
+
 echo -e "\e[1mSplit tunnel running, ${#EXCLUDED_APPS[*]} apps excluded.\e[0m"
 
-blacklist
+blacklist # start split tunnel loop
+
