@@ -104,10 +104,6 @@ remove_line(){
 }
 
 
-# ---------------------------------- LOAD CONFIG ---------------------------------- #
-
-load_config
-
 # ---------------------------------- ARGUMENTS ---------------------------------- #
 
 while getopts ": s a: r: l e" opt; do
@@ -117,19 +113,23 @@ while getopts ": s a: r: l e" opt; do
       exec >/dev/null 2>&1
     ;;
     a)
+      load_config
       add_line "$OPTARG"
       exit 1
     ;;
     r)
+      load_config
       remove_line "$OPTARG"
       exit 1
     ;;
     l)
+      load_config
       echo -e "\e[96mListe des applications exclues dans le split tunnel:\e[0m"
       echo -e "\e[95m$(cat "$EXCLUDED_APPS_FILE")\e[0m"
       exit 1
     ;;
     e)
+      load_config
       echo -e "\e[91mOuverture du fichier de configuration pour modification...\e[0m"
       xdg-open "$EXCLUDED_APPS_FILE"
       exit 1
@@ -154,7 +154,7 @@ mkdir -p "$(dirname "$STATE_FILE")" #ensure state file directory exists
 
 trap cleanup_exit EXIT # clean up on exit
 
-refresh_excluded_apps # config already loaded once, just refresh excluded apps
+load_excluded_apps # config already loaded once, just refresh excluded apps
 
 cleanup # clean up any existing split tunnel pids before starting
 
