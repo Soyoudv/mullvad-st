@@ -14,8 +14,6 @@ load_config(){
 }
 
 refresh_excluded_apps(){
-  mapfile -t EXCLUDED_APPS < "$EXCLUDED_APPS_FILE"
-
   echo -e "\e[96mUsing excluded apps list from:\e[0m \e[95m$EXCLUDED_APPS_FILE\e[0m"
 
   #read excluded apps into array
