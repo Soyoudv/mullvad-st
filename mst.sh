@@ -42,7 +42,6 @@ cleanup_exit(){
 app_remove(){
   if [[ $found -eq 0 ]]; then # if an app was removed from the excluded apps list
     app="${EXCLUDED_APPS_save[i]}"
-    echo -e "\e[91mRemoved from excluded apps list:\e[0m \e[95m${EXCLUDED_APPS_save[i]}\e[0m"
       
     pidtoadd=() #reset applist array
     while read -r pid; do #check for pids to remove from split tunnel
@@ -60,7 +59,7 @@ app_remove(){
         fi
       done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
     done
-    echo -e "\e[95m$app\e[0m [\e[92m${pidtoadd[*]}\e[0m] \e[91mincluded\e[0m" #avec une virgule entre les pids
+    echo -e "\e[95m$app\e[0m \e[91mincluded\e[0m\n ┗[\e[90m${pidtoadd[*]}\e[0m] " #avec une virgule entre les pids
 
     # Remove PIDs from state file
     grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
@@ -70,7 +69,7 @@ app_remove(){
 blacklist(){
   while true; do
 
-  # ---------------------------------- PARTIE INCLUSION ---------------------------------- #
+    #--- PARTIE INCLUSION ---
 
     EXCLUDED_APPS_save=("${EXCLUDED_APPS[@]}") #save current excluded apps
     refresh_excluded_apps # refresh excluded apps list
@@ -86,7 +85,7 @@ blacklist(){
       found=0
     done
     
-  # ---------------------------------- PARTIE EXCLUSION ---------------------------------- #
+    #--- PARTIE EXCLUSION ---
 
     for app in "${EXCLUDED_APPS[@]}"; do 
     # echo "Checking for app: $app"
@@ -110,7 +109,7 @@ blacklist(){
             echo "Failed to add $app [$delpid] to split tunnel"
           fi
         done
-        echo -e "\e[95m$app\e[0m [\e[96m${pidtodelete[*]}\e[0m] \e[92mexcluded\e[0m"
+        echo -e "\e[95m$app\e[0m \e[92mexcluded\e[0m\n ┗[\e[90m${pidtodelete[*]}\e[0m] "
       fi
     done
 
@@ -188,14 +187,6 @@ while getopts ": s a: r: l e" opt; do
     ;;
   esac
 done
-
-
-cleanup
-
-# state file to keep track of added pids
-STATE_FILE="$HOME/.cache/mullvad-split-pids"
-mkdir -p "$(dirname "$STATE_FILE")" #ensure state file directory exists
-: > "$STATE_FILE" # reset state file // : because > alone can fail if noclobber is set
 
 
 # ---------------------------------- MAIN SCRIPT ---------------------------------- #
