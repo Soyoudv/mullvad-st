@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # ---------------------------------- FUNCTIONS ---------------------------------- #
 
 load_config(){
@@ -40,37 +39,82 @@ cleanup_exit(){
   cleanup
 }
 
-blacklist(){
-  while true; do
-  refresh_excluded_apps # refresh excluded apps list
-
-  for app in "${EXCLUDED_APPS[@]}"; do
-    # echo "Checking for app: $app"
-
-    pidtodelete=() #reset applist array
-
-    while read -r pid; do
-      if ! grep -q "^$pid$" "$STATE_FILE"; then
-        pidtodelete+=("$pid") #add new pid to array
+app_remove(){
+  if [[ $found -eq 0 ]]; then # if an app was removed from the excluded apps list
+    app="${EXCLUDED_APPS_save[i]}"
+    echo -e "\e[91mRemoved from excluded apps list:\e[0m \e[95m${EXCLUDED_APPS_save[i]}\e[0m"
+      
+    pidtoadd=() #reset applist array
+    while read -r pid; do #check for pids to remove from split tunnel
+      if grep -q "^$pid$" "$STATE_FILE"; then
+        pidtoadd+=("$pid") #add new pid to array
       fi
     done < <(pgrep -f "$app")
 
-    #remove pids that are no longer running
-    if [ ${#pidtodelete[@]} -eq 0 ]; then
-      continue
-    else
-      for delpid in "${pidtodelete[@]}"; do
-        if mullvad split-tunnel add "$delpid" > /dev/null 2>&1; then
-          echo "$delpid" >> "$STATE_FILE"
+    for addpid in "${pidtoadd[@]}"; do
+      while read -r pid; do
+        if mullvad split-tunnel delete "$addpid" > /dev/null 2>&1; then
+          echo "$addpid" >> "$STATE_FILE"
         else 
-          echo "Failed to add $app [$delpid] to split tunnel"
+          echo "Failed to remove $app [$addpid] from split tunnel"
+        fi
+      done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
+    done
+    echo -e "\e[95m$app\e[0m [\e[92m${pidtoadd[*]}\e[0m] \e[91mincluded\e[0m" #avec une virgule entre les pids
+
+    # Remove PIDs from state file
+    grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+  fi
+}
+
+blacklist(){
+  while true; do
+
+  # ---------------------------------- PARTIE INCLUSION ---------------------------------- #
+
+    EXCLUDED_APPS_save=("${EXCLUDED_APPS[@]}") #save current excluded apps
+    refresh_excluded_apps # refresh excluded apps list
+
+    for i in "${!EXCLUDED_APPS_save[@]}"; do #loop through saved excluded apps
+      found=0
+      for j in "${!EXCLUDED_APPS[@]}"; do
+        if [[ "${EXCLUDED_APPS_save[i]}" == "${EXCLUDED_APPS[j]}" ]]; then
+          found=1
         fi
       done
-      echo -e "\e[95m$app\e[0m [\e[96m${pidtodelete[*]}\e[0m] \e[90mexcluded\e[0m"
-    fi
-  done
-  
-  sleep 5
+      app_remove
+      found=0
+    done
+    
+  # ---------------------------------- PARTIE EXCLUSION ---------------------------------- #
+
+    for app in "${EXCLUDED_APPS[@]}"; do 
+    # echo "Checking for app: $app"
+
+      pidtodelete=() #reset applist array
+
+      while read -r pid; do
+        if ! grep -q "^$pid$" "$STATE_FILE"; then
+          pidtodelete+=("$pid") #add new pid to array
+        fi
+      done < <(pgrep -f "$app")
+
+      #remove pids that are no longer running
+      if [ ${#pidtodelete[@]} -eq 0 ]; then
+        continue
+      else
+        for delpid in "${pidtodelete[@]}"; do
+          if mullvad split-tunnel add "$delpid" > /dev/null 2>&1; then
+            echo "$delpid" >> "$STATE_FILE"
+          else 
+            echo "Failed to add $app [$delpid] to split tunnel"
+          fi
+        done
+        echo -e "\e[95m$app\e[0m [\e[96m${pidtodelete[*]}\e[0m] \e[92mexcluded\e[0m"
+      fi
+    done
+
+    sleep 5
   done
 }
 
