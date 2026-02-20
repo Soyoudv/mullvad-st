@@ -146,7 +146,7 @@ remove_line(){
 
 # ---------------------------------- ARGUMENTS ---------------------------------- #
 
-while getopts ": s a: r: l e" opt; do
+while getopts ": s a: r: l e h" opt; do
   case ${opt} in
     s)
       # silent mode
@@ -178,6 +178,16 @@ while getopts ": s a: r: l e" opt; do
       echo -e "\e[92mOuverture du fichier de configuration pour modification...\e[0m"
       xdg-open "$EXCLUDED_APPS_FILE"
       exit 1
+    ;;
+    h)
+        echo -e "   \e[4m\e[1mMULLVAD SPLIT TUNNEL\e[0m (help menu)"
+        echo -e "\e[1m-h\e[0m\thelp"
+        echo -e "\e[1m-s\e[0m\tsilent mode, no output"
+        echo -e "\e[1m-a\e[0m\tadd a line to the excluded apps file"
+        echo -e "\e[1m-r\e[0m\tremove a line from the excluded apps file"
+        echo -e "\e[1m-l\e[0m\tlist excluded apps"
+        echo -e "\e[1m-e\e[0m\tedit excluded apps file"
+        exit 0
     ;;
     ?)
       # the rest
