@@ -45,13 +45,27 @@ app_include(){
     
     input=($line) # split line into array to separate app name from arguments
     type=${input[0]}
-    app=${input[*]:1} # get the rest of the line as arguments for pgrep
-    
-    pgrep_arg="" # ajout d'argument pour le pgrep avec une var string
-    if [[ "$type" == "cmd" ]]; then pgrep_arg="-f "
-    fi
+
+    case ${input[0]} in
+      "cmd")
+        app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
+        pgrep_arg="-f "
+        echo "cmd excl app found: $line"
+      ;;
+      "prg")
+        app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
+        pgrep_arg=""
+        echo "prg excl app found: $line"
+      ;;
+      *)
+        app=${input[*]}
+        pgrep_arg="" # default to pgrep by program name if no prefix is found
+        echo "no args app found: $line"
+      ;;
+    esac
     
     pidtoadd=() #reset applist array
+
     while read -r pid; do #check for pids to remove from split tunnel
       if grep -q "^$pid$" "$STATE_FILE"; then
         pidtoadd+=("$pid") #add new pid to array
@@ -61,7 +75,7 @@ app_include(){
     for addpid in "${pidtoadd[@]}"; do
       while read -r pid; do
         if mullvad split-tunnel delete "$addpid" > /dev/null 2>&1; then
-          echo "$addpid" >> "$STATE_FILE"
+          echo "$addpid" >> "$STATE_FILE" # a voir ??
         else 
           echo "Failed to remove $app [$addpid] from split tunnel"
         fi
@@ -101,21 +115,18 @@ blacklist(){
       
       case ${input[0]} in
         "cmd")
-          # type=${input[0]}
           app=${input[*]:1} # get the rest of the line as arguments for pgrep
           pgrep_arg="-f "
           echo "cmd excl app found: $line"
         ;;
         "prg")
-          # type=${input[0]}
           app=${input[*]:1} # get the rest of the line as arguments for pgrep
           pgrep_arg=""
           echo "prg excl app found: $line"
         ;;
         *)
-          # type=""
           app=${input[*]}
-          pgrep_arg="-f "
+          pgrep_arg="" # default to pgrep by program name if no prefix is found
           echo "no args app found: $line"
         ;;
       esac
