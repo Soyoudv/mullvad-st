@@ -67,7 +67,7 @@ app_include(){
         fi
       done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
     done
-    echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
+    echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m ($type)\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
     # Remove PIDs from state file
     grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   fi
@@ -122,7 +122,7 @@ blacklist(){
             echo "Failed to add $app [$delpid] to split tunnel"
           fi
         done
-        echo -e "$type \e[4m\e[95m$app\e[0m \e[92mexcluded\e[0m\n ╰(\e[90m${pidtodelete[*]}\e[0m)"
+        echo -e "\e[4m\e[95m$app\e[0m \e[92mexcluded\e[0m ($type)\n ╰(\e[90m${pidtodelete[*]}\e[0m)"
       fi
     done
 
