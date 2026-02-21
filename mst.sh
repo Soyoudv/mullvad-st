@@ -50,17 +50,14 @@ app_include(){
       "cmd")
         app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
         pgrep_arg="-f "
-        echo "cmd excl app found: $line"
       ;;
       "prg")
         app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
         pgrep_arg=""
-        echo "prg excl app found: $line"
       ;;
       *)
         app=${input[*]} # get the rest of the line as argumentsfor pgrep
         pgrep_arg=""
-        echo "app found with no valid type: $line"
       ;;
     esac
     
@@ -81,9 +78,11 @@ app_include(){
         fi
       done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
     done
-    echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m ($type)\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
-    # Remove PIDs from state file
-    grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+    if [ ! ${#pidtoadd[@]} -eq 0 ]; then # only print if there are pids to add back to the main tunnel
+      echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m ($type)\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
+      # Remove PIDs from state file
+      grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE" # remove pids from state file
+    fi
   fi
 }
 
@@ -117,12 +116,10 @@ blacklist(){
         "cmd")
           app=${input[*]:1} # get the rest of the line as arguments for pgrep
           pgrep_arg="-f "
-          echo "cmd excl app found: $line"
         ;;
         "prg")
           app=${input[*]:1} # get the rest of the line as arguments for pgrep
           pgrep_arg=""
-          echo "prg excl app found: $line"
         ;;
         *)
           echo -e "tried to include an app with invalid arguments: \e[91m$line\e[0m\n\e[92mLine must start with 'cmd' or 'prg' followed by the app name and optional arguments.\e[0m"
