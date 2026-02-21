@@ -97,12 +97,28 @@ blacklist(){
     for line in "${EXCLUDED_APPS[@]}"; do 
     # echo "Checking for app: $app"
       input=($line) # split line into array to separate app name from arguments
-      type=${input[0]}
-      app=${input[*]:1} # get the rest of the line as arguments for pgrep
-
-      pgrep_arg="" # ajout d'argument pour le pgrep avec une var string
-      if [[ "$type" == "cmd" ]]; then pgrep_arg="-f "
-      fi
+      type=""
+      
+      case ${input[0]} in
+        "cmd")
+          # type=${input[0]}
+          app=${input[*]:1} # get the rest of the line as arguments for pgrep
+          pgrep_arg="-f "
+          echo "cmd excl app found: $line"
+        ;;
+        "prg")
+          # type=${input[0]}
+          app=${input[*]:1} # get the rest of the line as arguments for pgrep
+          pgrep_arg=""
+          echo "prg excl app found: $line"
+        ;;
+        *)
+          # type=""
+          app=${input[*]}
+          pgrep_arg="-f "
+          echo "no args app found: $line"
+        ;;
+      esac
 
       pidtodelete=() #reset applist array
 
