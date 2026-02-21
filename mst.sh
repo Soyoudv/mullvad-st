@@ -227,13 +227,16 @@ while getopts ": s a: r: l e h" opt; do
       exit 1
     ;;
     h)
-        echo -e "   \e[4m\e[1mMULLVAD SPLIT TUNNEL\e[0m (help menu)"
-        echo -e "\e[1m-h\e[0m\thelp"
-        echo -e "\e[1m-s\e[0m\tsilent mode, no output"
-        echo -e "\e[1m-a\e[0m\tadd a line to the excluded apps file"
-        echo -e "\e[1m-r\e[0m\tremove a line from the excluded apps file"
-        echo -e "\e[1m-l\e[0m\tlist excluded apps"
-        echo -e "\e[1m-e\e[0m\tedit excluded apps file"
+        echo -e "   \e[4m\e[1mMULLVAD SPLIT TUNNEL\e[0m (help menu)\n"
+        echo -e "\e[1m-h\e[0m\thelp\n"
+        echo -e "\e[1m-a\e[0m\tadd a line to the excluded apps file\n"
+        echo -e "\e[1m-r\e[0m\tremove a line from the excluded apps file\n"
+        echo -e "\tadd cmd if you want to exclude with its command, and prg if you want to exclude with its prg name (without extension): -a \"cmd /usr/bin/librewolf\"\n"
+        echo -e "\tincorrect args or empty args will be rejected"
+        echo -e "\tadd quotes if the line contains spaces: -a \"prg Isolated Web Content\"\n"
+        echo -e "\e[1m-s\e[0m\tsilent mode, no output\n"
+        echo -e "\e[1m-l\e[0m\tlist excluded apps\n"
+        echo -e "\e[1m-e\e[0m\tedit excluded apps file\n"
         exit 0
     ;;
     ?)
