@@ -58,9 +58,9 @@ app_include(){
         echo "prg excl app found: $line"
       ;;
       *)
-        app=${input[*]}
-        pgrep_arg="" # default to pgrep by program name if no prefix is found
-        echo "no args app found: $line"
+        app=${input[*]} # get the rest of the line as argumentsfor pgrep
+        pgrep_arg=""
+        echo "app found with no valid type: $line"
       ;;
     esac
     
@@ -125,9 +125,10 @@ blacklist(){
           echo "prg excl app found: $line"
         ;;
         *)
-          app=${input[*]}
-          pgrep_arg="" # default to pgrep by program name if no prefix is found
-          echo "no args app found: $line"
+          echo -e "tried to include an app with invalid arguments: \e[91m$line\e[0m\n\e[92mLine must start with 'cmd' or 'prg' followed by the app name and optional arguments.\e[0m"
+          line_to_remove="$line"
+          remove_line
+          continue 2 # skip to next app in excluded apps list
         ;;
       esac
 
@@ -162,21 +163,21 @@ delete_empty_lines(){
 }
 
 add_line(){
-  if grep -Fxq "$OPTARG" "$EXCLUDED_APPS_FILE"; then
+  if grep -Fxq "$line_to_add" "$EXCLUDED_APPS_FILE"; then
     echo -e "\e[91mLine already exists in $EXCLUDED_APPS_FILE\e[0m"
   else
     printf "\n" >> "$EXCLUDED_APPS_FILE"
-    echo "$OPTARG" >> "$EXCLUDED_APPS_FILE"
-    echo -e "\e[92mAdded line to $EXCLUDED_APPS_FILE:\e[0m \e[95m$OPTARG\e[0m"
+    echo "$line_to_add" >> "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mAdded line to $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_add\e[0m"
 
     delete_empty_lines
   fi
 }
 
 remove_line(){
-  if grep -Fxq "$OPTARG" "$EXCLUDED_APPS_FILE"; then
-    sed -i "\|^$OPTARG$|d" "$EXCLUDED_APPS_FILE"
-    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$OPTARG\e[0m"
+  if grep -Fxq "$line_to_remove" "$EXCLUDED_APPS_FILE"; then
+    sed -i "\|^$line_to_remove$|d" "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove\e[0m"
 
     delete_empty_lines
   else
@@ -197,13 +198,21 @@ while getopts ": s a: r: l e h" opt; do
     a)
       # add line to excluded apps file
       load_config
-      add_line "$OPTARG"
+      argtab=($OPTARG)
+      if [[ ${argtab[0]} == "cmd" || ${argtab[0]} == "prg" ]]; then
+        line_to_add="$OPTARG"
+        add_line
+      else
+        echo -e "tried to add a line with invalid arguments: \e[91m$OPTARG\e[0m\n\e[92mLine must start with 'cmd' or 'prg' followed by the app name and optional arguments.\e[0m"
+        exit 1
+      fi
       exit 1
     ;;
     r)
       # remove line to excluded apps file
       load_config
-      remove_line "$OPTARG"
+      line_to_remove="$OPTARG"
+      remove_line
       exit 1
     ;;
     l)
