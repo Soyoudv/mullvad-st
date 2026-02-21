@@ -41,14 +41,22 @@ cleanup_exit(){
 
 app_include(){
   if [[ $found -eq 0 ]]; then # if an app was removed from the excluded apps list
-    app="${EXCLUDED_APPS_save[i]}"
-      
+    line="${EXCLUDED_APPS_save[i]}"
+    
+    input=($line) # split line into array to separate app name from arguments
+    type=${input[0]}
+    app=${input[*]:1} # get the rest of the line as arguments for pgrep
+    
+    pgrep_arg="" # ajout d'argument pour le pgrep avec une var string
+    if [[ "$type" == "cmd" ]]; then pgrep_arg="-f "
+    fi
+    
     pidtoadd=() #reset applist array
     while read -r pid; do #check for pids to remove from split tunnel
       if grep -q "^$pid$" "$STATE_FILE"; then
         pidtoadd+=("$pid") #add new pid to array
       fi
-    done < <(pgrep -f "$app")
+    done < <(pgrep -i $pgrep_arg"$app")
 
     for addpid in "${pidtoadd[@]}"; do
       while read -r pid; do
@@ -68,7 +76,7 @@ app_include(){
 blacklist(){
   while true; do
 
-    #--- PARTIE INCLUSION ---
+    #--- PARTIE INCLUSION --- (inclusion des apps qui ont été retirées de la liste d'exclusion)
 
     EXCLUDED_APPS_save=("${EXCLUDED_APPS[@]}") #save current excluded apps
     refresh_excluded_apps # refresh excluded apps list
@@ -86,8 +94,15 @@ blacklist(){
     
     #--- PARTIE EXCLUSION ---
 
-    for app in "${EXCLUDED_APPS[@]}"; do 
+    for line in "${EXCLUDED_APPS[@]}"; do 
     # echo "Checking for app: $app"
+      input=($line) # split line into array to separate app name from arguments
+      type=${input[0]}
+      app=${input[*]:1} # get the rest of the line as arguments for pgrep
+
+      pgrep_arg="" # ajout d'argument pour le pgrep avec une var string
+      if [[ "$type" == "cmd" ]]; then pgrep_arg="-f "
+      fi
 
       pidtodelete=() #reset applist array
 
@@ -95,9 +110,8 @@ blacklist(){
         if ! grep -q "^$pid$" "$STATE_FILE"; then
           pidtodelete+=("$pid") #add new pid to array
         fi
-      done < <(pgrep -f "$app")
+      done < <(pgrep -i $pgrep_arg"$app") # pgrep + la variable string d'arguments
 
-      #remove pids that are no longer running
       if [ ${#pidtodelete[@]} -eq 0 ]; then
         continue
       else
@@ -108,7 +122,7 @@ blacklist(){
             echo "Failed to add $app [$delpid] to split tunnel"
           fi
         done
-        echo -e "\e[4m\e[95m$app\e[0m \e[92mexcluded\e[0m\n ╰(\e[90m${pidtodelete[*]}\e[0m)"
+        echo -e "$type \e[4m\e[95m$app\e[0m \e[92mexcluded\e[0m\n ╰(\e[90m${pidtodelete[*]}\e[0m)"
       fi
     done
 
