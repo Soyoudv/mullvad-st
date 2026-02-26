@@ -12,19 +12,19 @@ add the apps to the excluded-apps file (1 app, 1 line)
 ## Installation:
 
 - Clone the repository:
-- 
+  
 ```sh
 git clone https://github.com/Soyoudv/mullvad-st.git && cd mullvad-st
 ```
 
 - Install with the makefile:
-- 
+  
 ```sh
 make install
 ```
 
 - Run with
-- 
+  
 ```sh
 mst
 ```
