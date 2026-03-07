@@ -40,48 +40,46 @@ cleanup_exit(){
 }
 
 app_include(){
-  if [[ $found -eq 0 ]]; then # if an app was removed from the excluded apps list
-    line="${EXCLUDED_APPS_save[i]}"
+  line="${EXCLUDED_APPS_save[i]}"
     
-    input=($line) # split line into array to separate app name from arguments
+  input=($line) # split line into array to separate app name from arguments
 
-    case ${input[0]} in
-      "cmd")
-        app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
-        pgrep_arg="-f "
-      ;;
-      "prg")
-        app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
-        pgrep_arg=""
-      ;;
-      *)
-        app=${input[*]} # get the rest of the line as argumentsfor pgrep
-        pgrep_arg=""
-      ;;
-    esac
+  case ${input[0]} in
+    "cmd")
+      app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
+      pgrep_arg="-f "
+    ;;
+    "prg")
+      app=${input[*]:1} # get the rest of the line as argumentsfor pgrep
+      pgrep_arg=""
+    ;;
+    *)
+      app=${input[*]} # get the rest of the line as argumentsfor pgrep
+      pgrep_arg=""
+    ;;
+  esac
     
-    pidtoadd=() #reset applist array
+  pidtoadd=() #reset applist array
 
-    while read -r pid; do #check for pids to remove from split tunnel
-      if grep -q "^$pid$" "$STATE_FILE"; then
-        pidtoadd+=("$pid") #add new pid to array
-      fi
-    done < <(pgrep -i $pgrep_arg"$app")
-
-    for addpid in "${pidtoadd[@]}"; do
-      while read -r pid; do
-        if mullvad split-tunnel delete "$addpid" > /dev/null 2>&1; then
-          echo "$addpid" >> "$STATE_FILE" # a voir ??
-        else 
-          echo "Failed to remove $app [$addpid] from split tunnel"
-        fi
-      done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
-    done
-    if [ ! ${#pidtoadd[@]} -eq 0 ]; then # only print if there are pids to add back to the main tunnel
-      echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m (${input[0]})\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
-      # Remove PIDs from state file
-      grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE" # remove pids from state file
+  while read -r pid; do #check for pids to remove from split tunnel
+    if grep -q "^$pid$" "$STATE_FILE"; then
+      pidtoadd+=("$pid") #add new pid to array
     fi
+  done < <(pgrep -i $pgrep_arg"$app")
+
+  for addpid in "${pidtoadd[@]}"; do
+    while read -r pid; do
+      if mullvad split-tunnel delete "$addpid" > /dev/null 2>&1; then
+        echo "$addpid" >> "$STATE_FILE" # a voir ??
+      else 
+        echo "Failed to remove $app [$addpid] from split tunnel"
+      fi
+    done < <(pgrep -f "${EXCLUDED_APPS_save[i]}")
+  done
+  if [ ! ${#pidtoadd[@]} -eq 0 ]; then # only print if there are pids to add back to the main tunnel
+    echo -e "\e[4m\e[95m$app\e[0m \e[91mincluded\e[0m (${input[0]})\n ╰(\e[90m${pidtoadd[*]}\e[0m)" #avec une virgule entre les pids
+    # Remove PIDs from state file
+    grep -v -F -f <(pgrep -f "${EXCLUDED_APPS_save[i]}") "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE" # remove pids from state file
   fi
 }
 
@@ -100,7 +98,10 @@ blacklist(){
           found=1
         fi
       done
-      app_include
+
+      if [[ $found -eq 0 ]]; then # if an app was removed from the excluded apps list
+        app_include
+      fi
       found=0
     done
     
