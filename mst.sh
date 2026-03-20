@@ -241,7 +241,7 @@ while getopts ": s a: r: l e h" opt; do
       # list excluded apps
       load_config
       echo -e "\e[1mListe des applications exclues dans le split tunnel:\e[0m"
-      echo -e "\e[4m\e[95m$(cat "$EXCLUDED_APPS_FILE")\e[0m"
+      echo -e "\e[0m\e[95m$(cat "$EXCLUDED_APPS_FILE")\e[0m"
       exit 1
     ;;
     e)
