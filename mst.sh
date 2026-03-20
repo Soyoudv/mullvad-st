@@ -39,6 +39,33 @@ cleanup_exit(){
   cleanup
 }
 
+delete_empty_lines(){
+  sed -i '/^$/d' "$EXCLUDED_APPS_FILE"
+}
+
+add_line(){
+  if grep -Fxq "$line_to_add" "$EXCLUDED_APPS_FILE"; then
+    echo -e "\e[91mLine already exists in $EXCLUDED_APPS_FILE\e[0m"
+  else
+    printf "\n" >> "$EXCLUDED_APPS_FILE"
+    echo "$line_to_add" >> "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mAdded line to $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_add\e[0m"
+
+    delete_empty_lines
+  fi
+}
+
+remove_line(){
+  if grep -Fxq "$line_to_remove" "$EXCLUDED_APPS_FILE"; then
+    sed -i "\|^$line_to_remove$|d" "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove\e[0m"
+
+    delete_empty_lines
+  else
+    echo -e "\e[91mLine not found in $EXCLUDED_APPS_FILE\e[0m"
+  fi
+}
+
 app_include(){
   line="${EXCLUDED_APPS_save[i]}"
     
@@ -152,33 +179,6 @@ blacklist(){
 
     sleep 5
   done
-}
-
-delete_empty_lines(){
-  sed -i '/^$/d' "$EXCLUDED_APPS_FILE"
-}
-
-add_line(){
-  if grep -Fxq "$line_to_add" "$EXCLUDED_APPS_FILE"; then
-    echo -e "\e[91mLine already exists in $EXCLUDED_APPS_FILE\e[0m"
-  else
-    printf "\n" >> "$EXCLUDED_APPS_FILE"
-    echo "$line_to_add" >> "$EXCLUDED_APPS_FILE"
-    echo -e "\e[92mAdded line to $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_add\e[0m"
-
-    delete_empty_lines
-  fi
-}
-
-remove_line(){
-  if grep -Fxq "$line_to_remove" "$EXCLUDED_APPS_FILE"; then
-    sed -i "\|^$line_to_remove$|d" "$EXCLUDED_APPS_FILE"
-    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove\e[0m"
-
-    delete_empty_lines
-  else
-    echo -e "\e[91mLine not found in $EXCLUDED_APPS_FILE\e[0m"
-  fi
 }
 
 
