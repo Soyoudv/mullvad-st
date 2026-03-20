@@ -56,13 +56,39 @@ add_line(){
 }
 
 remove_line(){
-  if grep -Fxq "$line_to_remove" "$EXCLUDED_APPS_FILE"; then
-    sed -i "\|^$line_to_remove$|d" "$EXCLUDED_APPS_FILE"
-    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove\e[0m"
+  # ici on veut vérifier que l'input n'ait pas d'arguments cmd ou prg, le programme ne supporte que la supression par nom de programme et enlève les entrées cmd et prg pour ce programme d'un coup, pour éviter les erreurs d'arguments et les doublons dans le fichier de config
+  input=($line_to_remove)
+  case ${input[0]} in
+    "cmd"|"prg")
+      echo -e "tried to remove a line with invalid arguments: \e[91m$line_to_remove\e[0m\n\e[92mLine must start with 'cmd' or 'prg' followed by the app name and optional arguments.\e[0m"
+      exit 1
+    ;;
+    *)
+      #dans ce cas là on ne fait rien, line to remove est déjà au bon format
+    ;;
+  esac
+
+  # supression de line tout remove avec cmd et prg avant
+
+  line_to_remove_cmd="cmd $line_to_remove"
+  line_to_remove_prg="prg $line_to_remove"
+
+
+  if grep -Fxq "$line_to_remove_cmd" "$EXCLUDED_APPS_FILE"; then
+    sed -i "\|^$line_to_remove_cmd$|d" "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove_cmd\e[0m"
 
     delete_empty_lines
   else
-    echo -e "\e[91mLine not found in $EXCLUDED_APPS_FILE\e[0m"
+    echo -e "\e[91mLine $line_to_remove_cmd not found in $EXCLUDED_APPS_FILE\e[0m"
+  fi
+  if grep -Fxq "$line_to_remove_prg" "$EXCLUDED_APPS_FILE"; then
+    sed -i "\|^$line_to_remove_prg$|d" "$EXCLUDED_APPS_FILE"
+    echo -e "\e[92mRemoved line from $EXCLUDED_APPS_FILE:\e[0m \e[95m$line_to_remove_prg\e[0m"
+
+    delete_empty_lines
+  else
+    echo -e "\e[91mLine $line_to_remove_prg not found in $EXCLUDED_APPS_FILE\e[0m"
   fi
 }
 
